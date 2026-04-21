@@ -38,7 +38,7 @@ public class Player : MonoBehaviour
         //first we get the required components
         _controller = GetComponent<CharacterController>();
         _shootingSound = GetComponent<AudioSource>();
-        _uiManager = FindObjectOfType<Canvas>().GetComponent<UIManager>();
+        _uiManager = FindObjectOfType<Canvas>()?.GetComponent<UIManager>();
 
     }
 
@@ -61,9 +61,16 @@ public class Player : MonoBehaviour
         {
             StartCoroutine(Reload());
         }
-        MovePlayer();
+
+        //MovePlayer();
         PauseGame();
 
+        //测试
+        if (Input.GetKeyDown(KeyCode.L)) 
+        {
+            //切换场景   
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Demo1");
+        }
     }
 
     public void BuyRifle()
@@ -178,7 +185,8 @@ public class Player : MonoBehaviour
         Vector3 velocity = directionOfMovement * _speed;
 
         //To keep our player on the ground, we always subtract the gravity from his y-axis
-        velocity.y -= _gravity;
+       velocity.y -= _gravity;
+
 
         //We usually move using through the LocalSpace world, but this time we have to use the GlobalSpace
         //GlobalSpace is where the main camera of the project is looking
@@ -188,6 +196,5 @@ public class Player : MonoBehaviour
         //Finally we move using the Character Controller's Move function
         _controller.Move(velocity * Time.deltaTime);
     }
-
 
 }
