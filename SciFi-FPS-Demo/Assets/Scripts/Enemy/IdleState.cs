@@ -6,12 +6,13 @@ public class IdleState : IState
 {
     private Fsm manager;
     private Parameter parameter;
+    private float idleTime;
     private float timer;
-
     public IdleState(Fsm manager)
     {
         this.manager = manager;
         this.parameter = manager.parameter;
+        idleTime = parameter.idleTime;
     }
 
     public void OnEnter()
@@ -21,11 +22,23 @@ public class IdleState : IState
 
     public void OnExit()
     {
-        throw new System.NotImplementedException();
+        timer = 0.0f;
     }
 
     public void OnUpdate()
     {
-        throw new System.NotImplementedException();
+        timer += Time.deltaTime;
+        if (timer >= idleTime) 
+        {
+            //切换巡逻
+            manager.Transititionstate(StateType.Patrol);
+        }
+
+        //测试代码
+        if (Vector3.Distance(manager.nav.transform.position, manager.player.transform.position) <= 2.0f)
+        {
+            manager.Transititionstate(StateType.Chase);
+            parameter.target = manager.player.transform;
+        }
     }
 }
