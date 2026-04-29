@@ -18,6 +18,7 @@ public class IdleState : IState
     public void OnEnter()
     {
         manager.animator.Play("Idle");
+        timer = 0.0f;
     }
 
     public void OnExit()
@@ -28,17 +29,28 @@ public class IdleState : IState
     public void OnUpdate()
     {
         timer += Time.deltaTime;
-        if (timer >= idleTime) 
+        if (timer >= idleTime)
         {
-            //切换巡逻
-            manager.Transititionstate(StateType.Patrol);
+            //攻击间隔
+            if (Vector3.Distance(manager.nav.transform.position, parameter.target.transform.position) <= parameter.attackDic)
+            {
+                Debug.LogError($"timer___{timer}");
+                // 到达人物点  切换攻击
+                manager.Transititionstate(StateType.Attack);
+            }
+            else
+            {
+                //切换巡逻
+                manager.Transititionstate(StateType.Patrol);
+            }
         }
 
         //测试代码
-        if (Vector3.Distance(manager.nav.transform.position, manager.player.transform.position) <= 2.0f)
+        if (Vector3.Distance(manager.nav.transform.position, manager.player.transform.position) <= 5.0f)
         {
-            manager.Transititionstate(StateType.Chase);
             parameter.target = manager.player.transform;
+            manager.Transititionstate(StateType.Chase);
+            
         }
     }
 }

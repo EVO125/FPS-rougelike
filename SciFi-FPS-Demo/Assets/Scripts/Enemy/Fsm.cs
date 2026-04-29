@@ -22,6 +22,7 @@ public class Parameter
     public Transform target;
     public float patrolSpeed;
     public float chaseSpeed;
+    public float attackDic;//攻击距离
 }
 public class Fsm : MonoBehaviour
 {
@@ -45,6 +46,7 @@ public class Fsm : MonoBehaviour
         states.Add(StateType.Idle, new IdleState(this));
         states.Add(StateType.Patrol, new PatrolState(this));
         states.Add(StateType.Chase, new ChaseState(this));
+        states.Add(StateType.Attack, new AttackState(this));
         Transititionstate(StateType.Idle);
 
         // 测试代码
