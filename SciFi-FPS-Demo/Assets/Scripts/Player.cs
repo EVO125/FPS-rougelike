@@ -71,6 +71,13 @@ public class Player : MonoBehaviour
             //切换场景   
             UnityEngine.SceneManagement.SceneManager.LoadScene("Demo1");
         }
+
+
+        if (Input.GetKeyDown(KeyCode.X)) 
+        {
+            _hasCoin = true;
+            BuyRifle();
+        }
     }
 
     public void BuyRifle()
