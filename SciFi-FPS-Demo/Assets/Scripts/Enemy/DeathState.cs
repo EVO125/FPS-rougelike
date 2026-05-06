@@ -15,6 +15,8 @@ public class DeathState : IState
     public void OnEnter()
     {
         manager.animator.Play("Death");
+        manager.nav.isStopped = true;
+        manager.nav.velocity = Vector3.zero;
     }
 
     public void OnExit()
