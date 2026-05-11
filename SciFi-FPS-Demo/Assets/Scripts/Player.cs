@@ -18,14 +18,13 @@ public class Player : MonoBehaviour
     [SerializeField] private GameObject _hitMarker;
     private AudioSource _shootingSound;
     private int _currentBullets;
-    private int _maxRifleBullets = 60;
+    private int _maxRifleBullets;
     private bool _isReloading = false;
 
-    //For UI
-    private UIManager _uiManager;
-
     //For Inventory
-    private bool _hasCoin;
+    //private bool _hasCoin;
+
+    private int hasCoin;//拥有的金币
 
     [SerializeField]
     private LayerMask enemyMask;
@@ -33,10 +32,26 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float bulletLen;//子弹的射击长度
 
+
+    private int maxHp;
+    private int currHp;
+
+    [SerializeField]
+    private PlayerInitData playerInfo;
+
+
+    private List<GunInfo> hasGuns = new List<GunInfo>();
+
+    private int currWeaponIndex;//当前武器索引
+    private void Awake()
+    {
+        EventCenter.Instance.AddEventListener<GunInfo>("BuyGunEvent", BuyRifle);
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        _currentBullets = _maxRifleBullets;
+        //_currentBullets = _maxRifleBullets;
         //Hide the mouse cursor at start
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
@@ -44,14 +59,23 @@ public class Player : MonoBehaviour
         //first we get the required components
         _controller = GetComponent<CharacterController>();
         _shootingSound = GetComponent<AudioSource>();
-        _uiManager = FindObjectOfType<Canvas>()?.GetComponent<UIManager>();
+       
+        InitPlayer();
+    }
 
+    private void InitPlayer() 
+    {
+        maxHp = playerInfo.cherkPlayerInfos[Tool.currCherk].initHp;
+        currHp = maxHp;
+        hasCoin = playerInfo.cherkPlayerInfos[Tool.currCherk].initGold;
+        hasGuns.Clear();
+        EventCenter.Instance.EventTrigger<int>("UpdateGoldNumEvent", hasCoin);
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        
         if(Input.GetMouseButtonDown(0) && _currentBullets > 0 && _rifle.activeSelf)
         {
             Shoot();
@@ -78,42 +102,31 @@ public class Player : MonoBehaviour
             UnityEngine.SceneManagement.SceneManager.LoadScene("Demo1");
         }
 
-
-        if (Input.GetKeyDown(KeyCode.X)) 
+        if (Input.GetKeyDown(KeyCode.P)) 
         {
-            _hasCoin = true;
-            BuyRifle();
+            EventCenter.Instance.EventTrigger("OpenShopPanel");
         }
     }
 
-    public void BuyRifle()
+    public void BuyRifle(GunInfo info)
     {
-        if(_hasCoin == true)
+        if (hasGuns.Find((a) => { return a.gunId == info.gunId; }) != null) return;
+        if (hasCoin >= info.price)
         {
-            _hasCoin = false;
-            if(_uiManager != null)
-            {
-                _uiManager.HideCoinImage();
-                StartCoroutine(_uiManager.BuySuccessful());
-                _rifle.SetActive(true);
-            }
-
-
+            hasCoin -= info.price;
+            //StartCoroutine(_uiManager.BuySuccessful());
+            EventCenter.Instance.EventTrigger("BuySuccessful");
+            _rifle.SetActive(true);
+            _maxRifleBullets = info.bulletNum;
+            _currentBullets = _maxRifleBullets;
+            EventCenter.Instance.EventTrigger<int>("UpdateGoldNumEvent", hasCoin);
+            hasGuns.Add(info);
         }
         else
         {
-            StartCoroutine(_uiManager.BuyFailed());
-
+            //StartCoroutine(_uiManager.BuyFailed());
+            EventCenter.Instance.EventTrigger("BuyFailed");
         }
-    }
-    public void GetCoin()
-    {
-        _hasCoin = true;
-        if(_uiManager != null)
-        {
-            _uiManager.ShowCoinImage();
-        }
-
     }
     IEnumerator Reload()
     {
@@ -219,10 +232,12 @@ public class Player : MonoBehaviour
 
     private void UpdateBulletsUI()
     {
-        if(_uiManager != null)
-        {
-            _uiManager.UpdateNumOfBullets(_currentBullets);
-        }
+        //if(_uiManager != null)
+        //{
+        //    _uiManager.UpdateNumOfBullets(_currentBullets);
+        //}
+        int[] bullets = new int[2] { _maxRifleBullets, _currentBullets };
+        EventCenter.Instance.EventTrigger<int[]>("UpdateNumOfBullets", bullets);
     }
     private void MovePlayer()
     {
@@ -246,4 +261,16 @@ public class Player : MonoBehaviour
         _controller.Move(velocity * Time.deltaTime);
     }
 
+    public void Damage(int attack)
+    {
+        int _currHp = currHp - attack;
+        currHp = Mathf.Clamp(_currHp, 0, maxHp);
+        if (currHp <= 0)
+        {
+            //玩家死亡状态   游戏结束
+            Debug.LogError("玩家死亡状态   游戏结束");
+        }
+        float[] hps = new float[2] { (float)maxHp, (float)currHp };
+        EventCenter.Instance.EventTrigger<float[]>("UpdatePlayerHp", hps);
+    }
 }

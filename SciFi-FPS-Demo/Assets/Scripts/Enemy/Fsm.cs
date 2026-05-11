@@ -27,6 +27,8 @@ public class Parameter
     public float patrolSpeed;
     public float chaseSpeed;
     public float attackDic;//攻击距离
+    public float attackAngle;//攻击半径
+    public int attack;//攻击力
 }
 public class Fsm : MonoBehaviour
 {
@@ -111,5 +113,7 @@ public class Fsm : MonoBehaviour
         {
             Transititionstate(StateType.Death);
         }
+        float[] hps = new float[2] { parameter.health, parameter.currHealth };
+        EventCenter.Instance.EventTrigger<float[]>("UpdateEnemyHp", hps);
     }
 }
