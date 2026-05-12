@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class Player : MonoBehaviour
@@ -46,8 +47,13 @@ public class Player : MonoBehaviour
     private void Awake()
     {
         EventCenter.Instance.AddEventListener<GunInfo>("BuyGunEvent", BuyRifle);
+        EventCenter.Instance.AddEventListener<int>("PlayerKillEnemyGetGold", PlayerKillEnemyGetGold);
     }
-
+    private void OnDestroy()
+    {
+        EventCenter.Instance.RemoveEventListener<GunInfo>("BuyGunEvent", BuyRifle);
+        EventCenter.Instance.RemoveEventListener<int>("PlayerKillEnemyGetGold", PlayerKillEnemyGetGold);
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -69,6 +75,12 @@ public class Player : MonoBehaviour
         currHp = maxHp;
         hasCoin = playerInfo.cherkPlayerInfos[Tool.currCherk].initGold;
         hasGuns.Clear();
+        EventCenter.Instance.EventTrigger<int>("UpdateGoldNumEvent", hasCoin);
+    }
+
+    private void PlayerKillEnemyGetGold(int gold) 
+    {
+        hasCoin += gold;
         EventCenter.Instance.EventTrigger<int>("UpdateGoldNumEvent", hasCoin);
     }
 
@@ -106,8 +118,42 @@ public class Player : MonoBehaviour
         {
             EventCenter.Instance.EventTrigger("OpenShopPanel");
         }
+        int index;
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            index = 0;
+            ChangeWeapon(index);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2)) 
+        {
+            index = 1;
+            ChangeWeapon(index);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            index = 2;
+            ChangeWeapon(index);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            index = 3;
+            ChangeWeapon(index);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            index = 4;
+            ChangeWeapon(index);
+        }
     }
-
+    private void ChangeWeapon(int index) 
+    {
+        if (index >= hasGuns.Count) return;
+        currWeaponIndex = index;
+        _maxRifleBullets = hasGuns[currWeaponIndex].bulletNum;
+        _currentBullets = _maxRifleBullets;
+        UpdateBulletsUI();
+        EventCenter.Instance.EventTrigger<Sprite>("UpdateWeaponIcon", hasGuns[currWeaponIndex].icon);
+    }
     public void BuyRifle(GunInfo info)
     {
         if (hasGuns.Find((a) => { return a.gunId == info.gunId; }) != null) return;
@@ -119,8 +165,12 @@ public class Player : MonoBehaviour
             _rifle.SetActive(true);
             _maxRifleBullets = info.bulletNum;
             _currentBullets = _maxRifleBullets;
+            UpdateBulletsUI();
             EventCenter.Instance.EventTrigger<int>("UpdateGoldNumEvent", hasCoin);
             hasGuns.Add(info);
+            currWeaponIndex = hasGuns.FindIndex((a)=> { return a.gunId == info.gunId; });
+            EventCenter.Instance.EventTrigger<Sprite>("UpdateWeaponIcon", hasGuns[currWeaponIndex].icon);
+            
         }
         else
         {
@@ -160,6 +210,8 @@ public class Player : MonoBehaviour
 
     private void Shoot()
     {
+        if (EventSystem.current.IsPointerOverGameObject()) return;
+
         _currentBullets--;
         //update the number of bullets in UI
         UpdateBulletsUI();
@@ -180,7 +232,7 @@ public class Player : MonoBehaviour
             if (enemy != null)
             {
                 //Debug.LogError("射击到怪物");
-                enemy.Transititionstate(StateType.Hit);
+                enemy.Damage(hasGuns[currWeaponIndex].attack);
             }
             else
             {

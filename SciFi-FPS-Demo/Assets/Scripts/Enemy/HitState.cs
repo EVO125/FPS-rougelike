@@ -18,7 +18,7 @@ public class HitState : IState
         manager.ForceCrossFade("Damage",0.0f);
         manager.nav.isStopped = true;
         manager.nav.velocity = Vector3.zero;
-        manager.Damage(20);//受伤测试代码
+        //manager.Damage(20);//受伤测试代码
     }
 
     public void OnExit()

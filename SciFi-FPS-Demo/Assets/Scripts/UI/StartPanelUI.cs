@@ -15,7 +15,7 @@ public class StartPanelUI : MonoBehaviour
 
     private void Awake()
     {
-        btn_Start.onClick.AddListener(()=> { Tool.ChangeScene("Demo1"); });
+        btn_Start.onClick.AddListener(()=> { Tool.ChangeScene("Demo1");Tool.currCherk = 0; });
         btn_Quit.onClick.AddListener(() => { Application.Quit(); });
     }
 }

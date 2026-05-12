@@ -6,6 +6,7 @@ public class DeathState : IState
 {
     private Fsm manager;
     private Parameter parameter;
+    private AnimatorStateInfo info;
     public DeathState(Fsm manager)
     {
         this.manager = manager;
@@ -26,6 +27,10 @@ public class DeathState : IState
 
     public void OnUpdate()
     {
-        
+        info = manager.animator.GetCurrentAnimatorStateInfo(0);
+        if (info.normalizedTime >= 0.95f)
+        {
+            GameObject.Destroy(manager.gameObject);
+        }
     }
 }

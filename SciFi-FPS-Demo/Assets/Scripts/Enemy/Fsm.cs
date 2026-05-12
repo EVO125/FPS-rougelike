@@ -29,6 +29,7 @@ public class Parameter
     public float attackDic;//攻击距离
     public float attackAngle;//攻击半径
     public int attack;//攻击力
+    public int deadGold;//死亡以后所获得的金币
 }
 public class Fsm : MonoBehaviour
 {
@@ -105,6 +106,7 @@ public class Fsm : MonoBehaviour
 
     public void Damage(int attack) 
     {
+        if (parameter.currHealth <= 0) return;
         int cha = attack - parameter.Def;
         if (cha <= 0) return;
         int _currHealth = parameter.currHealth - cha;
@@ -112,8 +114,12 @@ public class Fsm : MonoBehaviour
         if (parameter.currHealth <= 0) 
         {
             Transititionstate(StateType.Death);
+            //添加怪物死亡数   玩家增加对应的金币
+            EventCenter.Instance.EventTrigger("UpdateCurrDeadNum");
+            EventCenter.Instance.EventTrigger<int>("PlayerKillEnemyGetGold", parameter.deadGold);
         }
         float[] hps = new float[2] { parameter.health, parameter.currHealth };
         EventCenter.Instance.EventTrigger<float[]>("UpdateEnemyHp", hps);
+        Transititionstate(StateType.Hit);
     }
 }

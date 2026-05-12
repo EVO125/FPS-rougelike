@@ -15,6 +15,8 @@ public class MainnPanel : MonoBehaviour
     private GameObject hintPanel;
     [SerializeField]
     private Text txt_Bullet;
+    [SerializeField]
+    private Image currWeaponIcon;//当前武器的图标
     private void Awake()
     {
         EventCenter.Instance.AddEventListener<float[]>("UpdateEnemyHp", UpdateEnemyHp);
@@ -22,7 +24,8 @@ public class MainnPanel : MonoBehaviour
         EventCenter.Instance.AddEventListener<int>("UpdateGoldNumEvent", UpdateGoldNumEvent);
         EventCenter.Instance.AddEventListener("BuySuccessful", BuySuccessful);
         EventCenter.Instance.AddEventListener("BuyFailed", BuyFailed);
-        EventCenter.Instance.AddEventListener<int[]>("UpdateNumOfBullets", UpdateNumOfBullets); 
+        EventCenter.Instance.AddEventListener<int[]>("UpdateNumOfBullets", UpdateNumOfBullets);
+        EventCenter.Instance.AddEventListener<Sprite>("UpdateWeaponIcon", UpdateWeaponIcon);
     }
 
     /// <summary>
@@ -73,6 +76,13 @@ public class MainnPanel : MonoBehaviour
     {
         hintPanel.SetActive(false);
     }
+
+    //更新当前武器的icon
+    private void UpdateWeaponIcon(Sprite sp) 
+    {
+        currWeaponIcon.gameObject.SetActive(true);
+        currWeaponIcon.sprite = sp;
+    }
     private void OnDestroy()
     {
         EventCenter.Instance.RemoveEventListener<float[]>("UpdateEnemyHp", UpdateEnemyHp);
@@ -81,5 +91,6 @@ public class MainnPanel : MonoBehaviour
         EventCenter.Instance.RemoveEventListener("BuySuccessful", BuySuccessful);
         EventCenter.Instance.RemoveEventListener("BuyFailed", BuyFailed);
         EventCenter.Instance.RemoveEventListener<int[]>("UpdateNumOfBullets", UpdateNumOfBullets);
+        EventCenter.Instance.RemoveEventListener<Sprite>("UpdateWeaponIcon", UpdateWeaponIcon);
     }
 }
