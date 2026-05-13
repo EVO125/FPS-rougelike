@@ -46,7 +46,7 @@ public class IdleState : IState
         }
 
         //测试代码
-        if (Vector3.Distance(manager.nav.transform.position, manager.player.transform.position) <= 5.0f)
+        if (Vector3.Distance(manager.nav.transform.position, manager.player.transform.position) <= parameter.chaseRudis)
         {
             parameter.target = manager.player.transform;
             manager.Transititionstate(StateType.Chase);

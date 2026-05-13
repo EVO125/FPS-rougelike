@@ -19,7 +19,14 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Transform enemyContent;//怪物生成的父物体
 
-    public int currDeadNum;//当前波数死亡的怪物数量
+    private int currDeadNum;//死亡的怪物数量
+
+    private int thisRoundKillNum;//本轮击杀的怪物
+
+    [SerializeField]
+    private GameObject bossPrefabs;
+    [SerializeField]
+    private Transform bossBron;
 
     private void Awake()
     {
@@ -33,10 +40,32 @@ public class GameManager : MonoBehaviour
     {
         //刷新怪物
         UpdateEnmey();
+
+        //初始化波数
+        CherkInfo info = playerInfo.cherkPlayerInfos[Tool.currCherk].cherk;
+        int max = info.round;
+        int[] array = new int[2] { max, currEnmeyBornNum + 1 };
+        EventCenter.Instance.EventTrigger<int[]>("UpdateCurrEnemyBornNum", array);
+
+        int _max = 0;
+        for (int i = 0; i < info.enemys.Length; i++)
+        {
+            _max += info.enemys[i];
+        }
+        int[] _array = new int[2] { _max, currDeadNum };
+        EventCenter.Instance.EventTrigger<int[]>("UpdatePlayerKillNum", _array);
+
+        int[] __array = new int[2] { info.victory, currDeadNum };
+        EventCenter.Instance.EventTrigger<int[]>("UpdateBossInstNum", __array);
+
+        int[] ___array = new int[2] {info.enemys[currEnmeyBornNum], info.enemys[currEnmeyBornNum] - thisRoundKillNum };
+        EventCenter.Instance.EventTrigger<int[]>("UpdateEnemyHasNum", ___array);
     }
 
     public void UpdateEnmey() 
     {
+        thisRoundKillNum = 0;
+        EventCenter.Instance.EventTrigger<string>("HintPanelTxt","怪物刷新!!!");
         CherkInfo info = playerInfo.cherkPlayerInfos[Tool.currCherk].cherk;
         if (currEnmeyBornNum >= info.enemys.Length) return;
         int num = info.enemys[currEnmeyBornNum];
@@ -75,6 +104,48 @@ public class GameManager : MonoBehaviour
     private void UpdateCurrDeadNum() 
     {
         currDeadNum += 1;
+        thisRoundKillNum += 1;
+        CherkInfo info = playerInfo.cherkPlayerInfos[Tool.currCherk].cherk;
+        if (currDeadNum >= info.enemys[currEnmeyBornNum]) 
+        {
+            if (currEnmeyBornNum < info.round)
+            {
+                currEnmeyBornNum++;
+                //重新刷怪
+                UpdateEnmey();
+            }
+            else 
+            {
+                //没有打boss   把小怪清完了
+            }
+        }
+        if (currDeadNum == info.victory) 
+        {
+            //生成boss  打完过关
+            GameObject _boss = Instantiate(bossPrefabs, enemyContent);
+            Fsm boss = _boss.GetComponent<Fsm>();
+            boss.gameObject.SetActive(true);
+            boss.transform.position = bossBron.position;
+            boss.parameter.patrolPoints = RangePatrolPoint();
+        }
+        int max = 0;
+        for (int i = 0; i < info.enemys.Length; i++)
+        {
+            max += info.enemys[i];
+        }
+        int[] array = new int[2] { max , currDeadNum }; 
+        EventCenter.Instance.EventTrigger<int[]>("UpdatePlayerKillNum", array);
+        int[] _array = new int[2] { info.victory, currDeadNum };
+        EventCenter.Instance.EventTrigger<int[]>("UpdateBossInstNum", _array);
+        Debug.Log($"currEnmeyBornNum__{currEnmeyBornNum}");
+        Debug.Log($"thisRoundKillNum__{thisRoundKillNum}");
+        int[] ___array = new int[2] { info.enemys[currEnmeyBornNum], info.enemys[currEnmeyBornNum] - thisRoundKillNum };
+        EventCenter.Instance.EventTrigger<int[]>("UpdateEnemyHasNum", ___array);
+
+        int[] __array = new int[2] { info.round, currEnmeyBornNum + 1 };
+        EventCenter.Instance.EventTrigger<int[]>("UpdateCurrEnemyBornNum", __array);
+
+        EventCenter.Instance.EventTrigger<int>("PlayerGetBuff", currDeadNum);
     }
     private void OnDestroy()
     {

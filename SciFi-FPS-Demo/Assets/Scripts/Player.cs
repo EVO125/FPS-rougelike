@@ -44,15 +44,22 @@ public class Player : MonoBehaviour
     private List<GunInfo> hasGuns = new List<GunInfo>();
 
     private int currWeaponIndex;//当前武器索引
+
+    [SerializeField]
+    private PlayerBuffData playerBuffData;//buff配置文件
+
+    private List<BuffInfo> currHasBuff = new List<BuffInfo>();//当前拥有的buff 
     private void Awake()
     {
         EventCenter.Instance.AddEventListener<GunInfo>("BuyGunEvent", BuyRifle);
         EventCenter.Instance.AddEventListener<int>("PlayerKillEnemyGetGold", PlayerKillEnemyGetGold);
+        EventCenter.Instance.AddEventListener<int>("PlayerGetBuff", PlayerGetBuff);
     }
     private void OnDestroy()
     {
         EventCenter.Instance.RemoveEventListener<GunInfo>("BuyGunEvent", BuyRifle);
         EventCenter.Instance.RemoveEventListener<int>("PlayerKillEnemyGetGold", PlayerKillEnemyGetGold);
+        EventCenter.Instance.RemoveEventListener<int>("PlayerGetBuff", PlayerGetBuff);
     }
     // Start is called before the first frame update
     void Start()
@@ -77,7 +84,20 @@ public class Player : MonoBehaviour
         hasGuns.Clear();
         EventCenter.Instance.EventTrigger<int>("UpdateGoldNumEvent", hasCoin);
     }
-
+    private void PlayerGetBuff(int enemyDeadNum) 
+    {
+        List<BuffInfo> buffs = playerBuffData.buffs.FindAll((a)=> { return a.tagetNum <= enemyDeadNum; });
+        for (int i = 0; i < buffs.Count; i++)
+        {
+            BuffInfo info = buffs[i];
+            BuffInfo _info = currHasBuff.Find((a)=> { return a.buffID == info.buffID; });
+            if (_info == null) 
+            {
+                currHasBuff.Add(info);
+                EventCenter.Instance.EventTrigger<string>("HintPanelTxt", info.des);
+            }
+        }
+    }
     private void PlayerKillEnemyGetGold(int gold) 
     {
         hasCoin += gold;
@@ -144,6 +164,16 @@ public class Player : MonoBehaviour
             index = 4;
             ChangeWeapon(index);
         }
+
+        if (Input.GetKeyDown(playerBuffData.buffs[1].keyCode)) 
+        {
+            BuffInfo boo =  currHasBuff.Find((a)=> { return a.buffID == 20002; });
+            if (boo != null) 
+            {
+                EventCenter.Instance.EventTrigger<int>("ENEMY_DAMAG_All", (int)boo.value);
+                currHasBuff.Remove(boo);
+            }
+        }
     }
     private void ChangeWeapon(int index) 
     {
@@ -161,7 +191,7 @@ public class Player : MonoBehaviour
         {
             hasCoin -= info.price;
             //StartCoroutine(_uiManager.BuySuccessful());
-            EventCenter.Instance.EventTrigger("BuySuccessful");
+            EventCenter.Instance.EventTrigger<string>("HintPanelTxt", "You bought a Rifle !");
             _rifle.SetActive(true);
             _maxRifleBullets = info.bulletNum;
             _currentBullets = _maxRifleBullets;
@@ -175,7 +205,7 @@ public class Player : MonoBehaviour
         else
         {
             //StartCoroutine(_uiManager.BuyFailed());
-            EventCenter.Instance.EventTrigger("BuyFailed");
+            EventCenter.Instance.EventTrigger<string>("HintPanelTxt", "You have no coins !");
         }
     }
     IEnumerator Reload()
@@ -232,7 +262,10 @@ public class Player : MonoBehaviour
             if (enemy != null)
             {
                 //Debug.LogError("射击到怪物");
-                enemy.Damage(hasGuns[currWeaponIndex].attack);
+                int allAttack = 0;
+                float _buffJC = currHasBuff.Find((a) => { return a.buffID == 20001; }) == null ? 0 : currHasBuff.Find((a) => { return a.buffID == 20001; }).value;
+                allAttack = hasGuns[currWeaponIndex].attack + (int)(hasGuns[currWeaponIndex].attack * _buffJC);
+                enemy.Damage(allAttack);
             }
             else
             {
@@ -321,6 +354,7 @@ public class Player : MonoBehaviour
         {
             //玩家死亡状态   游戏结束
             Debug.LogError("玩家死亡状态   游戏结束");
+            EventCenter.Instance.EventTrigger("PlayerDeadEvent");
         }
         float[] hps = new float[2] { (float)maxHp, (float)currHp };
         EventCenter.Instance.EventTrigger<float[]>("UpdatePlayerHp", hps);

@@ -30,6 +30,8 @@ public class Parameter
     public float attackAngle;//攻击半径
     public int attack;//攻击力
     public int deadGold;//死亡以后所获得的金币
+    public float chaseRudis;//追赶检测范围
+    public bool isBoss;//是否是boss
 }
 public class Fsm : MonoBehaviour
 {
@@ -46,6 +48,7 @@ public class Fsm : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         nav = GetComponent<NavMeshAgent>();
+        EventCenter.Instance.AddEventListener<int>("ENEMY_DAMAG_All", ENEMY_DAMAG_All);
     }
     private void Start()
     {
@@ -66,7 +69,13 @@ public class Fsm : MonoBehaviour
     {
         currentstate.OnUpdate();
     }
-
+    /// <summary>
+    /// 全屏伤害
+    /// </summary>
+    private void ENEMY_DAMAG_All(int value) 
+    {
+        Damage(value);
+    }
     public void Transititionstate(StateType type) 
     {
         if (currentstate is DeathState) return;//死亡状态以后就不能切换任何状态了
@@ -115,11 +124,31 @@ public class Fsm : MonoBehaviour
         {
             Transititionstate(StateType.Death);
             //添加怪物死亡数   玩家增加对应的金币
-            EventCenter.Instance.EventTrigger("UpdateCurrDeadNum");
             EventCenter.Instance.EventTrigger<int>("PlayerKillEnemyGetGold", parameter.deadGold);
+            if (parameter.isBoss)
+            {
+                if (Tool.currCherk == 1)
+                {
+                    EventCenter.Instance.EventTrigger("GameVictory");
+                }
+                else
+                {
+                    Tool.currCherk++;
+                    Tool.ChangeScene("AbandonedFactorySceneDay");
+                }
+            }
+            else 
+            {
+                EventCenter.Instance.EventTrigger("UpdateCurrDeadNum");
+            }
         }
         float[] hps = new float[2] { parameter.health, parameter.currHealth };
         EventCenter.Instance.EventTrigger<float[]>("UpdateEnemyHp", hps);
         Transititionstate(StateType.Hit);
+    }
+
+    private void OnDestroy()
+    {
+        EventCenter.Instance.RemoveEventListener<int>("ENEMY_DAMAG_All", ENEMY_DAMAG_All);
     }
 }
