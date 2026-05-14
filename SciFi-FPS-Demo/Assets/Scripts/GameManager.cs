@@ -106,9 +106,9 @@ public class GameManager : MonoBehaviour
         currDeadNum += 1;
         thisRoundKillNum += 1;
         CherkInfo info = playerInfo.cherkPlayerInfos[Tool.currCherk].cherk;
-        if (currDeadNum >= info.enemys[currEnmeyBornNum]) 
+        if (thisRoundKillNum >= info.enemys[currEnmeyBornNum]) 
         {
-            if (thisRoundKillNum < info.round)
+            if (currEnmeyBornNum++ < info.round)
             {
                 currEnmeyBornNum++;
                 currEnmeyBornNum = Mathf.Clamp(currEnmeyBornNum, 0, info.round - 1);
