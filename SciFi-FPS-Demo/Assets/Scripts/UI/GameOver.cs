@@ -19,11 +19,11 @@ public class GameOver : MonoBehaviour
     }
     private void PlayerDeadEvent() 
     {
-        Des("游戏失败玩家死亡!!!");
+        Des("The game failed and the player died!!!");
     }
     private void GameVictory() 
     {
-        Des("游戏胜利!!!");
+        Des("Victory of the game!!!");
     }
     private void Des(string des) 
     {

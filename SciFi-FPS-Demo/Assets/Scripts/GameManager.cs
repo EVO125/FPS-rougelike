@@ -65,7 +65,7 @@ public class GameManager : MonoBehaviour
     public void UpdateEnmey() 
     {
         thisRoundKillNum = 0;
-        EventCenter.Instance.EventTrigger<string>("HintPanelTxt","怪物刷新!!!");
+        EventCenter.Instance.EventTrigger<string>("HintPanelTxt", "Monster Refresh!!!");
         CherkInfo info = playerInfo.cherkPlayerInfos[Tool.currCherk].cherk;
         if (currEnmeyBornNum >= info.enemys.Length) return;
         int num = info.enemys[currEnmeyBornNum];

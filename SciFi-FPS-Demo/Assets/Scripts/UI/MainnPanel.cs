@@ -45,7 +45,7 @@ public class MainnPanel : MonoBehaviour
     {
         int max = bornNum[0];
         int curr = bornNum[1];
-        txt_enemyBornNum.text = $"怪物波数：{curr}/{max}";
+        txt_enemyBornNum.text = $"Monster wave number：{curr}/{max}";
     }
     /// <summary>
     /// 玩家击杀怪物数量
@@ -54,13 +54,13 @@ public class MainnPanel : MonoBehaviour
     {
         int max = nums[0];
         int curr = nums[1];
-        txt_KillEnemyNum.text = $"击杀怪物数量：{curr}/{max}";
+        txt_KillEnemyNum.text = $"The number of monsters killed：{curr}/{max}";
     }
     private void UpdateBossInstNum(int[] nums) 
     {
         int max = nums[0];
         int curr = nums[1];
-        txt_BossBornNum.text = $"BOSS生成进度：{curr}/{max}";
+        txt_BossBornNum.text = $"BOSS Generate progress：{curr}/{max}";
     }
     /// <summary>
     /// 更新怪物血量
@@ -119,7 +119,7 @@ public class MainnPanel : MonoBehaviour
     {
         int max = nums[0];
         int curr = nums[1];
-        txt_EnemyHasNum.text = $"本轮还剩怪物：{curr}/{max}";
+        txt_EnemyHasNum.text = $"still monsters in this round：{curr}/{max}";
     }
     private void OnDestroy()
     {
