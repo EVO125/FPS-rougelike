@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class Tool
 {
-    public static int currCherk = 1;
+    public static int currCherk = 0;
 
     /// <summary>
     /// 切换场景
