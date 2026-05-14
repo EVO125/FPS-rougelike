@@ -108,9 +108,10 @@ public class GameManager : MonoBehaviour
         CherkInfo info = playerInfo.cherkPlayerInfos[Tool.currCherk].cherk;
         if (currDeadNum >= info.enemys[currEnmeyBornNum]) 
         {
-            if (currEnmeyBornNum < info.round)
+            if (thisRoundKillNum < info.round)
             {
                 currEnmeyBornNum++;
+                currEnmeyBornNum = Mathf.Clamp(currEnmeyBornNum, 0, info.round - 1);
                 //重新刷怪
                 UpdateEnmey();
             }
